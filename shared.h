@@ -12,17 +12,17 @@ typedef uint64_t uint64;
 
 const int kCacheLineSize = 64;
 
-inline double
+	inline double
 timeval_diff(const struct timeval *start, const struct timeval *end)
 {
-    double r = (end->tv_sec - start->tv_sec)* 1000000;
-  
-    if (end->tv_usec > start->tv_usec)
-        r += (end->tv_usec - start->tv_usec);
-    else if (end->tv_usec < start->tv_usec)
-        r -= (start->tv_usec - end->tv_usec);
+	double r = (end->tv_sec - start->tv_sec)* 1000000;
 
-    return (double) r / 1000000;
+	if (end->tv_usec > start->tv_usec)
+		r += (end->tv_usec - start->tv_usec);
+	else if (end->tv_usec < start->tv_usec)
+		r -= (start->tv_usec - end->tv_usec);
+
+	return (double) r / 1000000;
 }
 
 #endif /* _SHARED_H_ */

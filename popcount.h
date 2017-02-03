@@ -27,7 +27,7 @@
 
 #define ONES_STEP_32 ( 0x0000000100000001ULL )
 #define MSBS_STEP_32 ( 0x8000000080000000ULL )
-	
+
 #define COMPARE_STEP_8(x,y) ( ( ( ( ( (x) | MSBS_STEP_8 ) - ( (y) & ~MSBS_STEP_8 ) ) ^ (x) ^ ~(y) ) & MSBS_STEP_8 ) >> 7 )
 #define LEQ_STEP_8(x,y) ( ( ( ( ( (y) | MSBS_STEP_8 ) - ( (x) & ~MSBS_STEP_8 ) ) ^ (x) ^ (y) ) & MSBS_STEP_8 ) >> 7 )
 
@@ -43,15 +43,15 @@
 // This variant uses multiplication for the last summation instead of
 // continuing the shift/mask/addition chain.
 inline int suxpopcount(uint64 x) {
-    // Step 1:  00 - 00 = 0;  01 - 00 = 01; 10 - 01 = 01; 11 - 01 = 10;
-    x = x - ((x & G2) >> 1);
-    // step 2:  add 2 groups of 2.
-    x = (x & G4) + ((x >> 2) & G4);
-    // 2 groups of 4.
-    x = (x + (x >> 4)) & G8;
-    // Using a multiply to collect the 8 groups of 8 together.
-    x = x * L8 >> 56;
-    return x;
+	// Step 1:  00 - 00 = 0;  01 - 00 = 01; 10 - 01 = 01; 11 - 01 = 10;
+	x = x - ((x & G2) >> 1);
+	// step 2:  add 2 groups of 2.
+	x = (x & G4) + ((x >> 2) & G4);
+	// 2 groups of 4.
+	x = (x + (x >> 4)) & G8;
+	// Using a multiply to collect the 8 groups of 8 together.
+	x = x * L8 >> 56;
+	return x;
 }
 
 // Default to using the GCC builtin popcount.  On architectures
@@ -65,102 +65,134 @@ inline int suxpopcount(uint64 x) {
 #define popcountmask (popcountsize - 1)
 
 inline uint64 popcountLinear(uint64 *bits, uint64 x, uint64 nbits) {
-    if (nbits == 0) { return 0; }
-    uint64 lastword = (nbits - 1) / popcountsize;
-    uint64 p = 0;
+	if (nbits == 0) { return 0; }
+	uint64 lastword = (nbits - 1) / popcountsize;
+	uint64 p = 0;
 
-    for (int i = 0; i < lastword; i++) { /* tested;  manually unrolling doesn't help, at least in C */
-        p += popcount(bits[x+i]); // note that use binds us to 64 bit popcount impls
-    }
+	for (int i = 0; i < lastword; i++) { /* tested;  manually unrolling doesn't help, at least in C */
+		p += popcount(bits[x+i]); // note that use binds us to 64 bit popcount impls
+	}
 
-    // 'nbits' may or may not fall on a multiple of 64 boundary,
-    // so we may need to zero out the right side of the last word
-    // (accomplished by shifting it right, since we're just popcounting)
-    uint64 lastshifted = bits[x+lastword] >> (63 - ((nbits - 1) & popcountmask));
-    p += popcount(lastshifted);
-    return p;
+	// 'nbits' may or may not fall on a multiple of 64 boundary,
+	// so we may need to zero out the right side of the last word
+	// (accomplished by shifting it right, since we're just popcounting)
+	uint64 lastshifted = bits[x+lastword] >> (63 - ((nbits - 1) & popcountmask));
+	p += popcount(lastshifted);
+	return p;
 }
 
 // Return the index of the kth bit set in x 
 inline int select64_naive(uint64 x, int k) {
-    int count = -1;
-    for (int i = 63; i >= 0; i--) {
-        count++;
-        if (x & (1ULL << i)) {
-            k--;
-            if (k == 0) {
-                return count;
-            }
-        }
-    }
-    return -1;
+	int count = -1;
+	for (int i = 63; i >= 0; i--) {
+		count++;
+		if (x & (1ULL << i)) {
+			k--;
+			if (k == 0) {
+				return count;
+			}
+		}
+	}
+	return -1;
+}
+
+// Returns the position of the rank'th 1.  (rank = 0 returns the 1st 1)
+// Returns 64 if there are fewer than rank+1 1s.
+inline uint64_t select64_pdep_tzcnt(uint64_t val, int rank) {
+	//struct timeval tv_start, tv_end;
+	//gettimeofday(&tv_start, NULL);
+	uint64_t i = 1ULL << rank;
+	asm("pdep %[val], %[mask], %[val]"
+			: [val] "+r" (val)
+			: [mask] "r" (i));
+	asm("tzcnt %[bit], %[index]"
+			: [index] "=r" (i)
+			: [bit] "g" (val)
+			: "cc");
+	//gettimeofday(&tv_end, NULL);
+	//double elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	//printf("Time to perform select 64: %.2f seconds\n", elapsed_seconds);
+	return i;
 }
 
 inline int select64_popcount_search(uint64 x, int k) {
-    int loc = -1;
-    // if (k > popcount(x)) { return -1; }
+	//struct timeval tv_start, tv_end;
+	//gettimeofday(&tv_start, NULL);
+	int loc = -1;
+	// if (k > popcount(x)) { return -1; }
 
-    for (int testbits = 32; testbits > 0; testbits >>= 1) {
-        int lcount = popcount(x >> testbits);
-        if (k > lcount) {
-            x &= ((1ULL << testbits)-1);
-            loc += testbits;
-            k -= lcount;
-        } else {
-            x >>= testbits;
-        }
-    }
-    return loc+k;
+	for (int testbits = 32; testbits > 0; testbits >>= 1) {
+		int lcount = popcount(x >> testbits);
+		if (k > lcount) {
+			x &= ((1ULL << testbits)-1);
+			loc += testbits;
+			k -= lcount;
+		} else {
+			x >>= testbits;
+		}
+	}
+	//gettimeofday(&tv_end, NULL);
+	//double elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	//printf("Time to perform select 64: %.2f seconds\n", elapsed_seconds);
+	return loc+k;
 }
 
 inline int select64_broadword(uint64 x, int k) {
-    uint64 word = x;
-    int residual = k;
-    register uint64 byte_sums;
-    
-    byte_sums = word - ( ( word & 0xa * ONES_STEP_4 ) >> 1 );
-    byte_sums = ( byte_sums & 3 * ONES_STEP_4 ) + ( ( byte_sums >> 2 ) & 3 * ONES_STEP_4 );
-    byte_sums = ( byte_sums + ( byte_sums >> 4 ) ) & 0x0f * ONES_STEP_8;
-    byte_sums *= ONES_STEP_8;
-    
-    // Phase 2: compare each byte sum with the residual
-    const uint64 residual_step_8 = residual * ONES_STEP_8;
-    const int place = ( LEQ_STEP_8( byte_sums, residual_step_8 ) * ONES_STEP_8 >> 53 ) & ~0x7;
-    
-    // Phase 3: Locate the relevant byte and make 8 copies with incremental masks
-    const int byte_rank = residual - ( ( ( byte_sums << 8 ) >> place ) & 0xFF );
-    
-    const uint64 spread_bits = ( word >> place & 0xFF ) * ONES_STEP_8 & INCR_STEP_8;
-    const uint64 bit_sums = ZCOMPARE_STEP_8( spread_bits ) * ONES_STEP_8;
-    
-    // Compute the inside-byte location and return the sum
-    const uint64 byte_rank_step_8 = byte_rank * ONES_STEP_8;
-    
-    return place + ( LEQ_STEP_8( bit_sums, byte_rank_step_8 ) * ONES_STEP_8 >> 56 );   
+	uint64 word = x;
+	int residual = k;
+	register uint64 byte_sums;
+
+	byte_sums = word - ( ( word & 0xa * ONES_STEP_4 ) >> 1 );
+	byte_sums = ( byte_sums & 3 * ONES_STEP_4 ) + ( ( byte_sums >> 2 ) & 3 * ONES_STEP_4 );
+	byte_sums = ( byte_sums + ( byte_sums >> 4 ) ) & 0x0f * ONES_STEP_8;
+	byte_sums *= ONES_STEP_8;
+
+	// Phase 2: compare each byte sum with the residual
+	const uint64 residual_step_8 = residual * ONES_STEP_8;
+	const int place = ( LEQ_STEP_8( byte_sums, residual_step_8 ) * ONES_STEP_8 >> 53 ) & ~0x7;
+
+	// Phase 3: Locate the relevant byte and make 8 copies with incremental masks
+	const int byte_rank = residual - ( ( ( byte_sums << 8 ) >> place ) & 0xFF );
+
+	const uint64 spread_bits = ( word >> place & 0xFF ) * ONES_STEP_8 & INCR_STEP_8;
+	const uint64 bit_sums = ZCOMPARE_STEP_8( spread_bits ) * ONES_STEP_8;
+
+	// Compute the inside-byte location and return the sum
+	const uint64 byte_rank_step_8 = byte_rank * ONES_STEP_8;
+
+	return place + ( LEQ_STEP_8( bit_sums, byte_rank_step_8 ) * ONES_STEP_8 >> 56 );   
 }
 
 inline int select64(uint64 x, int k) {
-    return select64_popcount_search(x, k);
+	return select64_pdep_tzcnt(x, k);
+	//return select64_popcount_search(x, k);
+	//return select64_broadword(x, k);
 }
 
 // x is the starting offset of the 512 bits;
 // k is the thing we're selecting for.
 inline int select512(uint64 *bits, int x, int k) {
-    __asm__ __volatile__ (
-                          "prefetchnta (%0)\n"
-                          : : "r" (&bits[x]) );
-    int i = 0;
-    int pop = popcount(bits[x+i]);
-    while (k > pop && i < 7) {
-        k -= pop;
-        i++;
-        pop = popcount(bits[x+i]);
-    }
-    if (i == 7 && popcount(bits[x+i]) < k) {
-        return -1;
-    }
-    // We're now certain that the bit we want is stored in bv[x+i]
-    return i*64 + select64(bits[x+i], k);
+	//struct timeval tv_start, tv_end;
+	//gettimeofday(&tv_start, NULL);
+	
+	__asm__ __volatile__ (
+									"prefetchnta (%0)\n"
+									: : "r" (&bits[x]) );
+	int i = 0;
+	int pop = popcount(bits[x+i]);
+	while (k > pop && i < 7) {
+		k -= pop;
+		i++;
+		pop = popcount(bits[x+i]);
+	}
+	if (i == 7 && popcount(bits[x+i]) < k) {
+		return -1;
+	}
+	//gettimeofday(&tv_end, NULL);
+	//double elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	//printf("Time to perform aux 512: %.2f seconds\n", elapsed_seconds);
+	// We're now certain that the bit we want is stored in bv[x+i]
+	return i*64 + select64(bits[x+i], k);
 }
 
 // brute-force linear select
@@ -168,20 +200,20 @@ inline int select512(uint64 *bits, int x, int k) {
 // k is the thing we're selecting for (starting from bv[x]).
 // bvlen is the total length of bv
 inline uint64 selectLinear(uint64* bits, uint64 length, uint64 x, uint64 k) {
-    if (k > (length - x) * 64)
-        return -1;
-    uint64 i = 0;
-    uint64 pop = popcount(bits[x+i]);
-    while (k > pop && i < (length - 1)) {
-        k -= pop;
-        i++;
-        pop = popcount(bits[x+i]);
-    }
-    if ((i == length - 1) && (pop < k)) {
-        return -1;
-    }
-    // We're now certain that the bit we want is stored in bits[x+i]
-    return i*64 + select64(bits[x+i], k);
+	if (k > (length - x) * 64)
+		return -1;
+	uint64 i = 0;
+	uint64 pop = popcount(bits[x+i]);
+	while (k > pop && i < (length - 1)) {
+		k -= pop;
+		i++;
+		pop = popcount(bits[x+i]);
+	}
+	if ((i == length - 1) && (pop < k)) {
+		return -1;
+	}
+	// We're now certain that the bit we want is stored in bits[x+i]
+	return i*64 + select64(bits[x+i], k);
 }
 
 #endif /* _FASTRANK_POPCOUNT_H_ */

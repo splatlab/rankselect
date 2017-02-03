@@ -4,7 +4,7 @@ CXX = g++
 CXXCPP = g++ -E
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -Wall -Wextra
+#CXXFLAGS += -g -Wall -Wextra
 CXXFLAGS += -O9 -mpopcnt
 
 %.o: %.cc
