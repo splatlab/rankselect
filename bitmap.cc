@@ -164,5 +164,15 @@ uint64 BitmapPoppy::select(uint64 rank)
 }
 
 uint64 BitmapPoppy::selectWord(uint64 idx, uint64 rank) {
+	//uint64 sbu = select64_pdep_tzcnt(bits_[idx], rank);
+	//uint64 cmu = select64_popcount_search(bits_[idx], rank);
+	//if (sbu != cmu && sbu != 63 && cmu != -1) {
+		//fprintf(stdout, "sbu: %ld cmu: %ld\n", sbu, cmu);
+		//abort();
+	//}
+	//return sbu;
 	return select64(bits_[idx], rank);
 }
+
+
+
