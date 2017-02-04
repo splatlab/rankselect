@@ -44,6 +44,7 @@ class Bitmap {
 
 		virtual uint64 rank(uint64 pos) = 0;
 		virtual uint64 select(uint64 rank) = 0;
+		virtual uint64 selectWord(uint64 idx, uint64 rank) = 0;
 
 		uint64 pCount() { return pCount_; }
 
@@ -58,6 +59,7 @@ class BitmapPoppy: public Bitmap {
 
 		uint64 rank(uint64 pos);
 		uint64 select(uint64 rank);
+		uint64 selectWord(uint64 idx, uint64 rank);
 
 	private:
 		uint64* bits_;

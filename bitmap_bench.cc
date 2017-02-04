@@ -20,6 +20,8 @@ uint64 numOnesR = 0;
 const int numIters = 10;
 const int numQueries = 1000000;
 uint64 queries[numQueries];
+uint64 indices[numQueries];
+uint64 queries64[numQueries];
 
 uint32 seed = 1;
 
@@ -112,6 +114,12 @@ int main(int argc, char **argv)
 			queries[i] = xRand64() % numOnesR + 1 + numOnesL;
 		}
 	}
+	
+	uint64 numWords = (nbits + 63)/64;
+	for (int i = 0; i < numQueries; i++) {
+		indices[i] = xRand64() % numWords;
+		queries64[i] = xRand64() % 64;
+	}
 
 	struct timeval tv_start, tv_end;
 	gettimeofday(&tv_start, NULL);
@@ -128,12 +136,23 @@ int main(int argc, char **argv)
 				dummy ^= bitmap->select(queries[i]);
 	}
 	gettimeofday(&tv_end, NULL);
-
 	double elapsed_seconds = timeval_diff(&tv_start, &tv_end);
 	printf("%" PRIu64 " ops, %.2f seconds, ns/op: %.2f\n", 
 				 (uint64) numIters * numQueries, 
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
+
+	gettimeofday(&tv_start, NULL);
+	for (int iter = 0; iter < numIters; iter++)
+		for (int i = 0; i < numQueries; i++)
+			bitmap->selectWord(indices[i], queries64[i]);
+	gettimeofday(&tv_end, NULL);
+	elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	printf("%" PRIu64 " Word ops, %.2f seconds, ns/op: %.2f\n", 
+				 (uint64) numIters * numQueries, 
+				 elapsed_seconds,
+				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
+
 
 	if (dummy == 42) printf("42\n");
 

@@ -162,3 +162,7 @@ uint64 BitmapPoppy::select(uint64 rank)
 
 	return (l1Id << 32) + (l2Id << 11) + (groupId << 9) + select512(bits_, ((offset + l2Id) * 4 + groupId) * kWordCountPerBasicBlock, rank);
 }
+
+uint64 BitmapPoppy::selectWord(uint64 idx, uint64 rank) {
+	return select64(bits_[idx], rank);
+}
