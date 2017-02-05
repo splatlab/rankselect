@@ -18,3 +18,194 @@ benchmode: select
 10000000000 Word ops, 721.36 seconds, ns/op: 72.14
 benchmode: select
 10000000000 Word ops, 713.66 seconds, ns/op: 71.37
+
+nbits to create: 16777216
+allocated bits: 2097152 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 24 -d 50':
+
+    32,832,870,101      cache-references                                              (36.36%)
+     4,672,106,086      cache-misses              #   14.230 % of all cache refs      (45.45%)
+    13,089,843,455      L1-dcache-load-misses     #   17.85% of all L1-dcache hits    (45.45%)
+    73,315,319,941      L1-dcache-loads                                               (45.46%)
+    11,418,470,890      L1-dcache-stores                                              (36.37%)
+        16,848,026      L1-icache-load-misses                                         (36.37%)
+       195,469,225      LLC-load-misses           #    2.13% of all LL-cache hits     (36.37%)
+     9,191,120,262      LLC-loads                                                     (36.37%)
+       293,230,867      LLC-store-misses                                              (18.18%)
+       458,477,220      LLC-stores                                                    (18.18%)
+   919,442,715,692      instructions                                                  (27.27%)
+
+     164.113097169 seconds time elapsed
+
+nbits to create: 33554432
+allocated bits: 4194304 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 25 -d 50':
+
+    34,204,889,195      cache-references                                              (36.36%)
+     5,507,690,861      cache-misses              #   16.102 % of all cache refs      (45.46%)
+    13,154,259,474      L1-dcache-load-misses     #   17.94% of all L1-dcache hits    (45.46%)
+    73,314,494,370      L1-dcache-loads                                               (45.46%)
+    11,427,559,815      L1-dcache-stores                                              (36.37%)
+        17,485,196      L1-icache-load-misses                                         (36.37%)
+       269,316,283      LLC-load-misses           #    2.78% of all LL-cache hits     (36.37%)
+     9,703,257,701      LLC-loads                                                     (36.37%)
+       283,930,203      LLC-store-misses                                              (18.18%)
+       450,129,908      LLC-stores                                                    (18.18%)
+   919,176,639,238      instructions                                                  (27.27%)
+
+     163.485470808 seconds time elapsed
+
+nbits to create: 67108864
+allocated bits: 8388608 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 26 -d 50':
+
+    34,896,252,906      cache-references                                              (36.36%)
+    16,189,005,014      cache-misses              #   46.392 % of all cache refs      (45.45%)
+    13,199,310,706      L1-dcache-load-misses     #   17.96% of all L1-dcache hits    (45.45%)
+    73,500,512,880      L1-dcache-loads                                               (45.45%)
+    11,498,113,189      L1-dcache-stores                                              (36.36%)
+        43,962,372      L1-icache-load-misses                                         (36.37%)
+     3,779,788,011      LLC-load-misses           #   38.03% of all LL-cache hits     (36.37%)
+     9,937,687,603      LLC-loads                                                     (36.37%)
+       290,373,593      LLC-store-misses                                              (18.18%)
+       450,909,705      LLC-stores                                                    (18.18%)
+   920,804,464,840      instructions                                                  (27.27%)
+
+     388.472599155 seconds time elapsed
+
+nbits to create: 134217728
+allocated bits: 16777216 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 27 -d 50':
+
+    35,469,734,405      cache-references                                              (36.36%)
+    25,807,467,730      cache-misses              #   72.759 % of all cache refs      (45.45%)
+    13,216,228,930      L1-dcache-load-misses     #   17.93% of all L1-dcache hits    (45.45%)
+    73,720,927,285      L1-dcache-loads                                               (45.45%)
+    11,633,443,111      L1-dcache-stores                                              (36.37%)
+        62,572,752      L1-icache-load-misses                                         (36.36%)
+     6,936,588,087      LLC-load-misses           #   68.74% of all LL-cache hits     (36.36%)
+    10,091,030,644      LLC-loads                                                     (36.36%)
+       292,287,527      LLC-store-misses                                              (18.18%)
+       456,568,199      LLC-stores                                                    (18.18%)
+   923,374,213,988      instructions                                                  (27.27%)
+
+     592.742847445 seconds time elapsed
+
+nbits to create: 268435456
+allocated bits: 33554432 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 28 -d 50':
+
+    35,494,210,085      cache-references                                              (36.36%)
+    30,533,314,294      cache-misses              #   86.023 % of all cache refs      (45.45%)
+    13,241,520,839      L1-dcache-load-misses     #   18.01% of all L1-dcache hits    (45.45%)
+    73,503,819,168      L1-dcache-loads                                               (45.45%)
+    11,591,120,962      L1-dcache-stores                                              (36.37%)
+        61,937,131      L1-icache-load-misses                                         (36.36%)
+     8,613,902,423      LLC-load-misses           #   84.49% of all LL-cache hits     (36.36%)
+    10,194,846,226      LLC-loads                                                     (36.37%)
+       284,843,252      LLC-store-misses                                              (18.18%)
+       455,224,652      LLC-stores                                                    (18.18%)
+   925,001,216,252      instructions                                                  (27.27%)
+
+     631.655033290 seconds time elapsed
+
+nbits to create: 536870912
+allocated bits: 67108864 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 29 -d 50':
+
+    35,681,483,842      cache-references                                              (36.36%)
+    33,023,478,345      cache-misses              #   92.551 % of all cache refs      (45.45%)
+    13,238,127,914      L1-dcache-load-misses     #   17.87% of all L1-dcache hits    (45.45%)
+    74,070,043,051      L1-dcache-loads                                               (45.45%)
+    11,894,556,023      L1-dcache-stores                                              (36.37%)
+        66,392,090      L1-icache-load-misses                                         (36.36%)
+     9,417,900,904      LLC-load-misses           #   92.14% of all LL-cache hits     (36.36%)
+    10,221,504,070      LLC-loads                                                     (36.36%)
+       291,544,302      LLC-store-misses                                              (18.18%)
+       461,388,727      LLC-stores                                                    (18.18%)
+   934,625,481,535      instructions                                                  (27.27%)
+
+     680.349747356 seconds time elapsed
+
+nbits to create: 1073741824
+allocated bits: 134217728 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 30 -d 50':
+
+    35,565,676,789      cache-references                                              (36.36%)
+    33,828,285,535      cache-misses              #   95.115 % of all cache refs      (45.45%)
+    13,277,105,448      L1-dcache-load-misses     #   18.02% of all L1-dcache hits    (45.45%)
+    73,699,735,438      L1-dcache-loads                                               (45.45%)
+    11,945,134,633      L1-dcache-stores                                              (36.36%)
+        66,988,643      L1-icache-load-misses                                         (36.36%)
+     9,606,263,072      LLC-load-misses           #   95.23% of all LL-cache hits     (36.36%)
+    10,087,504,947      LLC-loads                                                     (36.37%)
+       325,816,656      LLC-store-misses                                              (18.18%)
+       567,554,562      LLC-stores                                                    (18.18%)
+   944,718,202,233      instructions                                                  (27.27%)
+
+     716.852998369 seconds time elapsed
+
+nbits to create: 2147483648
+allocated bits: 268435456 bytes
+
+
+ Performance counter stats for './bitmap_bench -s -n 31 -d 50':
+
+    35,440,865,075      cache-references                                              (36.36%)
+    34,044,361,395      cache-misses              #   96.060 % of all cache refs      (45.45%)
+    13,176,565,596      L1-dcache-load-misses     #   17.54% of all L1-dcache hits    (45.45%)
+    75,121,161,139      L1-dcache-loads                                               (45.45%)
+    12,555,015,457      L1-dcache-stores                                              (36.36%)
+        63,145,057      L1-icache-load-misses                                         (36.36%)
+     9,617,213,417      LLC-load-misses           #   95.48% of all LL-cache hits     (36.37%)
+    10,072,910,198      LLC-loads                                                     (36.37%)
+       295,880,381      LLC-store-misses                                              (18.18%)
+       541,559,400      LLC-stores                                                    (18.18%)
+   980,520,478,937      instructions                                                  (27.27%)
+
+     730.227007825 seconds time elapsed
+
+nbits to create: 4294967296
+allocated bits: 536870912 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 32 -d 50':
+
+    35,518,707,046      cache-references                                              (36.36%)
+    34,189,945,086      cache-misses              #   96.259 % of all cache refs      (45.45%)
+    13,203,238,362      L1-dcache-load-misses     #   16.58% of all L1-dcache hits    (45.45%)
+    79,630,885,376      L1-dcache-loads                                               (45.45%)
+    14,787,862,030      L1-dcache-stores                                              (36.36%)
+        65,545,174      L1-icache-load-misses                                         (36.36%)
+     9,587,280,545      LLC-load-misses           #   95.03% of all LL-cache hits     (36.36%)
+    10,088,923,271      LLC-loads                                                     (36.37%)
+       298,915,218      LLC-store-misses                                              (18.18%)
+       535,012,944      LLC-stores                                                    (18.18%)
+ 1,057,513,174,653      instructions                                                  (27.27%)
+
+     742.705683078 seconds time elapsed
+
+nbits to create: 8589934592
+allocated bits: 1073741824 bytes
+
+ Performance counter stats for './bitmap_bench -s -n 33 -d 50':
+
+    35,494,477,204      cache-references                                              (36.36%)
+    34,247,121,855      cache-misses              #   96.486 % of all cache refs      (45.45%)
+    13,245,933,703      L1-dcache-load-misses     #   14.95% of all L1-dcache hits    (45.45%)
+    88,589,366,430      L1-dcache-loads                                               (45.45%)
+    19,258,271,298      L1-dcache-stores                                              (36.36%)
+        71,570,977      L1-icache-load-misses                                         (36.36%)
+     9,637,872,003      LLC-load-misses           #   95.31% of all LL-cache hits     (36.36%)
+    10,111,703,502      LLC-loads                                                     (36.36%)
+       318,747,713      LLC-store-misses                                              (18.18%)
+       567,788,729      LLC-stores                                                    (18.18%)
+ 1,211,611,028,285      instructions                                                  (27.27%)
+
+     753.692232940 seconds time elapsed
