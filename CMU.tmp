@@ -1,0 +1,20 @@
+benchmode: select
+10000000000 Word ops, 154.88 seconds, ns/op: 15.49
+benchmode: select
+10000000000 Word ops, 154.08 seconds, ns/op: 15.41
+benchmode: select
+10000000000 Word ops, 378.91 seconds, ns/op: 37.89
+benchmode: select
+10000000000 Word ops, 582.77 seconds, ns/op: 58.28
+benchmode: select
+10000000000 Word ops, 622.84 seconds, ns/op: 62.28
+benchmode: select
+10000000000 Word ops, 670.34 seconds, ns/op: 67.03
+benchmode: select
+10000000000 Word ops, 708.68 seconds, ns/op: 70.87
+benchmode: select
+10000000000 Word ops, 718.52 seconds, ns/op: 71.85
+benchmode: select
+10000000000 Word ops, 721.36 seconds, ns/op: 72.14
+benchmode: select
+10000000000 Word ops, 713.66 seconds, ns/op: 71.37
