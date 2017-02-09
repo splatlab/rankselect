@@ -18,7 +18,7 @@ CXXFLAGS += -O9 -mpopcnt -I. -Iinclude/ -Iinclude/sdsl
 all: bitmap_bench
 
 clean:
-	rm -f bitmap_bench bitmap_bench_sdsl *.o core
+	rm -f bitmap_bench bitmap_bench_sdsl bitmap_bench_stats *.o core
 
 bitmap_bench: bitmap.o bitmap_bench.o
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS) $^ -o $@
