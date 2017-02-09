@@ -345,7 +345,6 @@ inline uint32_t bits::sel(uint64_t val, uint32_t rank) {
 
 inline uint32_t bits::sel(uint64_t x, uint32_t i)
 {
-	std::cout << "select word" << std::endl;
 #ifdef __SSE4_2__
 		uint64_t s = x, b;
 		s = s-((s>>1) & 0x5555555555555555ULL);

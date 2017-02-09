@@ -4,8 +4,8 @@ CXX = g++ -std=c++11
 CXXCPP = g++ -E
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -Wall -Wextra -I. -Iinclude/ -Iinclude/sdsl 
-#CXXFLAGS += -O9 -mpopcnt -I. -Iinclude/ -Iinclude/sdsl 
+#CXXFLAGS += -g -Wall -Wextra -I. -Iinclude/ -Iinclude/sdsl 
+CXXFLAGS += -O9 -mpopcnt -I. -Iinclude/ -Iinclude/sdsl 
 
 %.o: %.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
