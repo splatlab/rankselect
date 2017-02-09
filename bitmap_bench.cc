@@ -17,8 +17,8 @@ double densityR = 0.1;
 uint64 numOnesL = 0;
 uint64 numOnesR = 0;
 
-const int numIters = 10;
-const int numQueries = 1000000;
+//const int numIters = 10;
+const int numQueries = 10000000;
 uint64 queries[numQueries];
 uint64 indices[numQueries];
 uint64 queries64[numQueries];
@@ -72,6 +72,7 @@ int main(int argc, char **argv)
 {
 	extern int optind;
 	int ch;
+	int numIters;
 
 	uint64 nbits;
 	benchmode mode = BENCH_RANK;
@@ -84,6 +85,7 @@ int main(int argc, char **argv)
 			case 'n':
 				nbits = atoi(optarg);
 				nbits = 1ULL << nbits;
+				numIters = nbits/4194304;
 				break;
 			case 'd':
 				densityL = densityR = atof(optarg);
@@ -100,6 +102,7 @@ int main(int argc, char **argv)
 	BitmapPoppy* bitmap = new BitmapPoppy(bits, nbits);
 	uint64 dummy = 0x1234567890ABCDEF;
 
+#if 0
 	if (mode == BENCH_RANK) {
 		for (int i = 0; i < numQueries; i++) {
 			queries[i] = xRand64() % nbits + 1;
@@ -114,16 +117,19 @@ int main(int argc, char **argv)
 			queries[i] = xRand64() % numOnesR + 1 + numOnesL;
 		}
 	}
-	
+#endif
+
 	uint64 numWords = (nbits + 63)/64;
 	for (int i = 0; i < numQueries; i++) {
 		indices[i] = xRand64() % numWords;
-		queries64[i] = xRand64() % 64;
+		queries64[i] = (xRand64() % 63) + 1;
 	}
 
 	struct timeval tv_start, tv_end;
-	gettimeofday(&tv_start, NULL);
+	double elapsed_seconds;
 
+#if 0
+	gettimeofday(&tv_start, NULL);
 	if (mode == BENCH_RANK) {
 		for (int iter = 0; iter < numIters; iter++)
 			for (int i = 0; i < numQueries; i++)
@@ -136,11 +142,12 @@ int main(int argc, char **argv)
 				dummy ^= bitmap->select(queries[i]);
 	}
 	gettimeofday(&tv_end, NULL);
-	double elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	elapsed_seconds = timeval_diff(&tv_start, &tv_end);
 	printf("%" PRIu64 " ops, %.2f seconds, ns/op: %.2f\n", 
 				 (uint64) numIters * numQueries, 
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
+#endif
 
 	gettimeofday(&tv_start, NULL);
 	for (int iter = 0; iter < numIters; iter++)
@@ -152,7 +159,6 @@ int main(int argc, char **argv)
 				 (uint64) numIters * numQueries, 
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
-
 
 	if (dummy == 42) printf("42\n");
 
