@@ -8,8 +8,12 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#include "select_support_scan.hpp"
+#include "select_support_mcl.hpp"
 #include "bitmap.h"
 #include "shared.h"
+
+using namespace sdsl;
 
 double densityL = 0.1;
 double densityR = 0.1;
@@ -63,6 +67,37 @@ uint64* createRandomBits(uint64 nbits, uint32 thresholdL, uint32 thresholdR)
 	return bits;
 }
 
+void intVectorRandomBit(uint64 nbits, bit_vector &vector,  uint32 thresholdL, uint32 thresholdR)
+{
+	fprintf(stderr, "nbits to create: %" PRIu64 "\n", nbits);
+	fprintf(stderr, "allocated bits: %" PRIu64 " bytes\n", nbits/8);
+
+	for (uint64 i = 0; i < nbits / 2; i++) {
+		if (xRand() < thresholdL) {
+			uint64 val = vector.get_int(i / 64, 64);
+			val |= 1ul << (i % 64);
+			vector.set_int(i / 64, val, 64);
+			++numOnesL;
+		} else {
+			uint64 val = vector.get_int(i / 64, 64);
+			val &= ~(1ull << (i % 64));
+			vector.set_int(i / 64, val, 64);
+		}
+	}
+	for (uint64 i = nbits / 2; i < nbits; i++) {
+		if (xRand() < thresholdR) {
+			uint64 val = vector.get_int(i / 64, 64);
+			val |= 1ull << (i % 64);
+			vector.set_int(i / 64, val, 64);
+			++numOnesR;
+		} else {
+			uint64 val = vector.get_int(i / 64, 64);
+			val &= ~(1ull << (i % 64));
+			vector.set_int(i / 64, val, 64);
+		}
+	}
+}
+
 enum benchmode {
 	BENCH_RANK,
 	BENCH_SELECT,
@@ -71,16 +106,20 @@ enum benchmode {
 int main(int argc, char **argv)
 {
 	extern int optind;
+	int bench;
 	int ch;
 	int numIters;
 
 	uint64 nbits;
 	benchmode mode = BENCH_RANK;
 
-	while ((ch = getopt(argc, argv, "sn:d:")) != -1) {
+	while ((ch = getopt(argc, argv, "sb:n:d:")) != -1) {
 		switch (ch) {
 			case 's':
 				mode = BENCH_SELECT;
+				break;
+			case 'b':
+				bench = atoi(optarg);
 				break;
 			case 'n':
 				nbits = atoi(optarg);
@@ -97,12 +136,17 @@ int main(int argc, char **argv)
 
 	uint32 thresholdL = (uint32) (UINT32_MAX * densityL);
 	uint32 thresholdR = (uint32) (UINT32_MAX * densityR);
+	uint64 numWords = (nbits + 63)/64;
 
-	uint64* bits = createRandomBits(nbits, thresholdL, thresholdR);
-	BitmapPoppy* bitmap = new BitmapPoppy(bits, nbits);
+		uint64* bits = createRandomBits(nbits, thresholdL, thresholdR);
+		BitmapPoppy* bitmap = new BitmapPoppy(bits, nbits);
+
+		bit_vector vector(numWords, 0, 64);
+		intVectorRandomBit(nbits, vector, thresholdL, thresholdR);
+		bit_vector::select_0_type bit_select(&vector);
+
 	uint64 dummy = 0x1234567890ABCDEF;
 
-#if 0
 	if (mode == BENCH_RANK) {
 		for (int i = 0; i < numQueries; i++) {
 			queries[i] = xRand64() % nbits + 1;
@@ -117,29 +161,36 @@ int main(int argc, char **argv)
 			queries[i] = xRand64() % numOnesR + 1 + numOnesL;
 		}
 	}
-#endif
 
-	uint64 numWords = (nbits + 63)/64;
+#if 0
 	for (int i = 0; i < numQueries; i++) {
 		indices[i] = xRand64() % numWords;
 		queries64[i] = (xRand64() % 63) + 1;
 	}
+#endif
 
 	struct timeval tv_start, tv_end;
 	double elapsed_seconds;
 
-#if 0
 	gettimeofday(&tv_start, NULL);
-	if (mode == BENCH_RANK) {
-		for (int iter = 0; iter < numIters; iter++)
-			for (int i = 0; i < numQueries; i++)
-				dummy ^= bitmap->rank(queries[i]);
+	if (bench) {
+		if (mode == BENCH_RANK) {
+			for (int iter = 0; iter < numIters; iter++)
+				for (int i = 0; i < numQueries; i++)
+					dummy ^= bitmap->rank(queries[i]);
+		} else {
+			assert(mode == BENCH_SELECT);
+
+			for (int iter = 0; iter < numIters; iter++)
+				for (int i = 0; i < numQueries; i++)
+					dummy ^= bitmap->select(queries[i]);
+		}
 	} else {
 		assert(mode == BENCH_SELECT);
 
 		for (int iter = 0; iter < numIters; iter++)
 			for (int i = 0; i < numQueries; i++)
-				dummy ^= bitmap->select(queries[i]);
+				dummy ^= bit_select(queries[i]);
 	}
 	gettimeofday(&tv_end, NULL);
 	elapsed_seconds = timeval_diff(&tv_start, &tv_end);
@@ -147,8 +198,8 @@ int main(int argc, char **argv)
 				 (uint64) numIters * numQueries, 
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
-#endif
 
+#if 0
 	gettimeofday(&tv_start, NULL);
 	for (int iter = 0; iter < numIters; iter++)
 		for (int i = 0; i < numQueries; i++)
@@ -159,6 +210,7 @@ int main(int argc, char **argv)
 				 (uint64) numIters * numQueries, 
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
+#endif
 
 	if (dummy == 42) printf("42\n");
 
