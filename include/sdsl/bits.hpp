@@ -321,29 +321,53 @@ inline uint64_t bits::map01(uint64_t x, uint64_t c)
     return ((x ^((x << 1) | c)) &  x);
 }
 
+#if 0
+// Returns the position of the rank'th 1.  (rank = 0 returns the 1st 1)
+// Returns 64 if there are fewer than rank+1 1s.
+inline uint32_t bits::sel(uint64_t val, uint32_t rank) {
+	//struct timeval tv_start, tv_end;
+	//gettimeofday(&tv_start, NULL);
+	uint64_t i = 1ULL << rank;
+	asm("pdep %[val], %[mask], %[val]"
+			: [val] "+r" (val)
+			: [mask] "r" (i));
+	asm("tzcnt %[bit], %[index]"
+			: [index] "=r" (i)
+			: [bit] "g" (val)
+			: "cc");
+	//gettimeofday(&tv_end, NULL);
+	//double elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	//printf("Time to perform select 64: %.2f seconds\n", elapsed_seconds);
+	return i;
+}
+
+#else
+
 inline uint32_t bits::sel(uint64_t x, uint32_t i)
 {
+	std::cout << "select word" << std::endl;
 #ifdef __SSE4_2__
-    uint64_t s = x, b;
-    s = s-((s>>1) & 0x5555555555555555ULL);
-    s = (s & 0x3333333333333333ULL) + ((s >> 2) & 0x3333333333333333ULL);
-    s = (s + (s >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
-    s = 0x0101010101010101ULL*s;
+		uint64_t s = x, b;
+		s = s-((s>>1) & 0x5555555555555555ULL);
+		s = (s & 0x3333333333333333ULL) + ((s >> 2) & 0x3333333333333333ULL);
+		s = (s + (s >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+		s = 0x0101010101010101ULL*s;
 // now s contains 8 bytes s[7],...,s[0]; s[j] contains the cumulative sum
 // of (j+1)*8 least significant bits of s
-    b = (s+ps_overflow[i]) & 0x8080808080808080ULL;
+		b = (s+ps_overflow[i]) & 0x8080808080808080ULL;
 // ps_overflow contains a bit mask x consisting of 8 bytes
 // x[7],...,x[0] and x[j] is set to 128-j
 // => a byte b[j] in b is >= 128 if cum sum >= j
 
 // __builtin_ctzll returns the number of trailing zeros, if b!=0
-    int  byte_nr = __builtin_ctzll(b) >> 3;   // byte nr in [0..7]
-    s <<= 8;
-    i -= (s >> (byte_nr<<3)) & 0xFFULL;
-    return (byte_nr << 3) + lt_sel[((i-1) << 8) + ((x>>(byte_nr<<3))&0xFFULL) ];
+		int  byte_nr = __builtin_ctzll(b) >> 3;   // byte nr in [0..7]
+		s <<= 8;
+		i -= (s >> (byte_nr<<3)) & 0xFFULL;
+		return (byte_nr << 3) + lt_sel[((i-1) << 8) + ((x>>(byte_nr<<3))&0xFFULL) ];
 #endif
-    return _sel(x, i);
+		return _sel(x, i);
 }
+#endif
 
 inline uint32_t bits::_sel(uint64_t x, uint32_t i)
 {
