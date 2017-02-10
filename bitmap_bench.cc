@@ -20,8 +20,11 @@ uint64 numOnesR = 0;
 const int numIters = 10;
 const int numQueries = 10000000;
 uint64 queries[numQueries];
+
+#if 0
 uint64 indices[numQueries];
 uint64 queries64[numQueries];
+#endif
 
 uint32 seed = 1;
 
@@ -72,7 +75,6 @@ int main(int argc, char **argv)
 {
 	extern int optind;
 	int ch;
-	int numIters;
 
 	uint64 nbits;
 	benchmode mode = BENCH_RANK;
@@ -85,7 +87,6 @@ int main(int argc, char **argv)
 			case 'n':
 				nbits = atoi(optarg);
 				nbits = 1ULL << nbits;
-				numIters = nbits/4194304;
 				break;
 			case 'd':
 				densityL = densityR = atof(optarg);
@@ -119,10 +120,12 @@ int main(int argc, char **argv)
 		}
 	}
 
+#if 0
 	for (int i = 0; i < numQueries; i++) {
 		indices[i] = xRand64() % numWords;
 		queries64[i] = (xRand64() % 63) + 1;
 	}
+#endif
 
 	struct timeval tv_start, tv_end;
 	double elapsed_seconds;
@@ -146,6 +149,7 @@ int main(int argc, char **argv)
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
 
+#if 0
 	gettimeofday(&tv_start, NULL);
 	for (int iter = 0; iter < numIters; iter++)
 		for (int i = 0; i < numQueries; i++)
@@ -156,6 +160,7 @@ int main(int argc, char **argv)
 				 (uint64) numIters * numQueries, 
 				 elapsed_seconds,
 				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
+#endif
 
 	if (dummy == 42) printf("42\n");
 

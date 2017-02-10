@@ -22,7 +22,7 @@ double densityR = 0.1;
 uint64 numOnesL = 0;
 uint64 numOnesR = 0;
 
-//const int numIters = 10;
+const int numIters = 10;
 const int numQueries = 10000000;
 uint64 queries[numQueries];
 uint64 indices[numQueries];
@@ -79,9 +79,7 @@ enum benchmode {
 int main(int argc, char **argv)
 {
 	extern int optind;
-	int bench;
 	int ch;
-	int numIters;
 
 	uint64 nbits;
 	benchmode mode = BENCH_RANK;
@@ -94,7 +92,6 @@ int main(int argc, char **argv)
 			case 'n':
 				nbits = atoi(optarg);
 				nbits = 1ULL << nbits;
-				numIters = nbits/4194304;
 				break;
 			case 'd':
 				densityL = densityR = atof(optarg);
