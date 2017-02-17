@@ -435,10 +435,11 @@ inline int select64_broadword(uint64 x, int k) {
 }
 
 inline int select64(uint64 x, int k) {
-	//return select64_sdsl(x, k);
+	return select64_sdsl(x, k);
 	//return select64_pdep_tzcnt(x, k);
-	return select64_popcount_search(x, k);
+	//return select64_popcount_search(x, k);
 	//return select64_broadword(x, k);
+	//return 0;
 }
 
 // x is the starting offset of the 512 bits;

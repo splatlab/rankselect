@@ -17,11 +17,11 @@ double densityR = 0.1;
 uint64 numOnesL = 0;
 uint64 numOnesR = 0;
 
-const int numIters = 10;
+//const int numIters = 10;
 const int numQueries = 10000000;
-
-uint64 queries64[numQueries];
+uint64 queries[numQueries];
 uint64 indices[numQueries];
+uint64 queries64[numQueries];
 
 uint32 seed = 1;
 
@@ -71,7 +71,9 @@ enum benchmode {
 int main(int argc, char **argv)
 {
 	extern int optind;
+	int bench;
 	int ch;
+	int numIters;
 
 	uint64 nbits;
 	benchmode mode = BENCH_RANK;
@@ -84,6 +86,7 @@ int main(int argc, char **argv)
 			case 'n':
 				nbits = atoi(optarg);
 				nbits = 1ULL << nbits;
+				numIters = nbits/4194304;
 				break;
 			case 'd':
 				densityL = densityR = atof(optarg);
@@ -101,6 +104,22 @@ int main(int argc, char **argv)
 	BitmapPoppy* bitmap = new BitmapPoppy(bits, nbits);
 
 	uint64 dummy = 0x1234567890ABCDEF;
+#if 0
+	if (mode == BENCH_RANK) {
+		for (int i = 0; i < numQueries; i++) {
+			queries[i] = xRand64() % nbits + 1;
+		}
+	} else {
+		assert(mode == BENCH_SELECT);
+
+		for (int i = 0; i < numQueries / 2; i++) {
+			queries[i] = xRand64() % numOnesL + 1;
+		}
+		for (int i = numQueries / 2; i < numQueries; i++) {
+			queries[i] = xRand64() % numOnesR + 1 + numOnesL;
+		}
+	}
+#endif
 
 	for (int i = 0; i < numQueries; i++) {
 		indices[i] = xRand64() % numWords;
@@ -110,10 +129,32 @@ int main(int argc, char **argv)
 	struct timeval tv_start, tv_end;
 	double elapsed_seconds;
 
+#if 0
+	gettimeofday(&tv_start, NULL);
+	if (mode == BENCH_RANK) {
+		for (int iter = 0; iter < numIters; iter++)
+			for (int i = 0; i < numQueries; i++)
+				dummy ^= bitmap->rank(queries[i]);
+	} else {
+		assert(mode == BENCH_SELECT);
+
+		for (int iter = 0; iter < numIters; iter++)
+			for (int i = 0; i < numQueries; i++)
+				dummy ^= bitmap->select(queries[i]);
+	}
+	gettimeofday(&tv_end, NULL);
+	elapsed_seconds = timeval_diff(&tv_start, &tv_end);
+	printf("%" PRIu64 " ops, %.2f seconds, ns/op: %.2f\n", 
+				 (uint64) numIters * numQueries, 
+				 elapsed_seconds,
+				 elapsed_seconds * 1000000000 / ((uint64) numIters * numQueries));
+#endif
+
+	int rank = 61;
 	gettimeofday(&tv_start, NULL);
 	for (int iter = 0; iter < numIters; iter++)
-		for (uint32 i = 0; i < numQueries; i++)
-			bitmap->selectWord(2279, queries64[i]);
+		for (int i = 0; i < numQueries; i++)
+			rank = bitmap->selectWord(indices[i], rank);
 	gettimeofday(&tv_end, NULL);
 	elapsed_seconds = timeval_diff(&tv_start, &tv_end);
 	printf("%" PRIu64 " Word ops, %.2f seconds, ns/op: %.2f\n", 
