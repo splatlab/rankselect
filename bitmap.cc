@@ -33,14 +33,21 @@ BitmapPoppy::BitmapPoppy(uint64 *bits, uint64 nbits)
 	l2EntryCount_ = nbits_ >> 11;
 	basicBlockCount_ = nbits_ / kBasicBlockSize;
 
-	assert(posix_memalign((void **) &l1Entries_, kCacheLineSize, l1EntryCount_ * sizeof(uint64)) >= 0);
-	assert(posix_memalign((void **) &l2Entries_, kCacheLineSize, l2EntryCount_ * sizeof(uint64)) >= 0);
+	if (posix_memalign((void **) &l1Entries_, kCacheLineSize, l1EntryCount_ * sizeof(uint64)) != 0) {
+		fprintf(stderr, "allocation of l1Entries_ failed");
+		exit(1);
+	}
+	if (posix_memalign((void **) &l2Entries_, kCacheLineSize, l2EntryCount_ * sizeof(uint64)) != 0) {
+		fprintf(stderr, "allocation of l2Entries_ failed");
+		exit(1);
+	}
 
 	uint64 l2Id = 0;
 	uint64 basicBlockId = 0;
 
 	pCount_ = 0;
-	memset(locCount_, 0, sizeof(locCount_));
+	loc_.reserve(l1EntryCount_);
+	locCount_.reserve(l1EntryCount_);
 
 	for (uint64 i = 0; i < l1EntryCount_; i++) {
 		l1Entries_[i] = pCount_;
@@ -50,8 +57,8 @@ BitmapPoppy::BitmapPoppy(uint64 *bits, uint64 nbits)
 			l2Entries_[l2Id] = cum;
 
 			for (int offset = 0; offset < 30; offset += 10) {
-				int c = popcountLinear(bits_, 
-															 basicBlockId * kWordCountPerBasicBlock, 
+				int c = popcountLinear(bits_,
+															 basicBlockId * kWordCountPerBasicBlock,
 															 kBasicBlockSize);
 				cum += c;
 				basicBlockId++;
@@ -63,7 +70,8 @@ BitmapPoppy::BitmapPoppy(uint64 *bits, uint64 nbits)
 			if (++l2Id >= l2EntryCount_) break;
 		}
 
-		locCount_[i] = (cum + kLocFreq - 1) / kLocFreq;
+		assert(locCount_.size() == i);
+		locCount_.push_back((cum + kLocFreq - 1) / kLocFreq);
 		pCount_ += cum;
 	}
 
@@ -71,7 +79,8 @@ BitmapPoppy::BitmapPoppy(uint64 *bits, uint64 nbits)
 	//fprintf(stdout, "Starting the loop: %ld \n", locCount_[0]);
 
 	for (uint64 i = 0; i < l1EntryCount_; i++) {
-		loc_[i] = new uint32[locCount_[i]];
+		assert(loc_.size() == i);
+		loc_.push_back(new uint32[locCount_[i]]);
 		//fprintf(stdout, "Starting the loop: %ld %ld \n", i, locCount_[i]);
 		locCount_[i] = 0;
 
@@ -124,7 +133,7 @@ uint64 BitmapPoppy::select(uint64 rank)
 
 	//struct timeval tv_start, tv_end;
 	//gettimeofday(&tv_start, NULL);
-	
+
 	uint64 l1Id;
 	for (l1Id = l1EntryCount_ - 1; l1Id >= 0; l1Id--) {
 		if (l1Entries_[l1Id] < rank) {

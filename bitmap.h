@@ -29,6 +29,7 @@ limitations under the License.
 #include <string.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <vector>
 
 #include "shared.h"
 
@@ -52,10 +53,16 @@ class Bitmap {
 		uint64 pCount_;
 };
 
-class BitmapPoppy: public Bitmap {
+class BitmapPoppy final: public Bitmap {
 	public:
 		BitmapPoppy(uint64* bits, uint64 nbits);
-		~BitmapPoppy() {}
+		~BitmapPoppy() {
+			for (uint32* p : loc_) {
+				delete[] p;
+			}
+			free(static_cast<void*>(l1Entries_));
+			free(static_cast<void*>(l2Entries_));
+		}
 
 		uint64 rank(uint64 pos);
 		uint64 select(uint64 rank);
@@ -71,8 +78,8 @@ class BitmapPoppy: public Bitmap {
 		uint64  l1EntryCount_;
 		uint64  basicBlockCount_;
 
-		uint32* loc_[1ULL << 31];
-		uint64  locCount_[1ULL << 31];
+		std::vector<uint32*> loc_;
+		std::vector<uint64> locCount_;
 
 		static const int kLocFreq = 8192;
 		static const int kLocFreqMask = 8191;
