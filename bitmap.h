@@ -53,7 +53,7 @@ class Bitmap {
 		uint64 pCount_;
 };
 
-class BitmapPoppy: public Bitmap {
+class BitmapPoppy final: public Bitmap {
 	public:
 		BitmapPoppy(uint64* bits, uint64 nbits);
 		~BitmapPoppy() {
