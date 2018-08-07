@@ -33,8 +33,14 @@ BitmapPoppy::BitmapPoppy(uint64 *bits, uint64 nbits)
 	l2EntryCount_ = nbits_ >> 11;
 	basicBlockCount_ = nbits_ / kBasicBlockSize;
 
-	assert(posix_memalign((void **) &l1Entries_, kCacheLineSize, l1EntryCount_ * sizeof(uint64)) >= 0);
-	assert(posix_memalign((void **) &l2Entries_, kCacheLineSize, l2EntryCount_ * sizeof(uint64)) >= 0);
+	if (posix_memalign((void **) &l1Entries_, kCacheLineSize, l1EntryCount_ * sizeof(uint64)) != 0) {
+		fprintf(stderr, "allocation of l1Entries_ failed");
+		exit(1);
+	}
+	if (posix_memalign((void **) &l2Entries_, kCacheLineSize, l2EntryCount_ * sizeof(uint64)) != 0) {
+		fprintf(stderr, "allocation of l2Entries_ failed");
+		exit(1);
+	}
 
 	uint64 l2Id = 0;
 	uint64 basicBlockId = 0;
