@@ -60,6 +60,8 @@ class BitmapPoppy final: public Bitmap {
 			for (uint32* p : loc_) {
 				delete[] p;
 			}
+			free(static_cast<void*>(l1Entries_));
+			free(static_cast<void*>(l2Entries_));
 		}
 
 		uint64 rank(uint64 pos);
